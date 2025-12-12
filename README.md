@@ -1,2 +1,2 @@
 # godot-nn-lunar-lander
-A Lunar Lander neural net running in Godot using a compute shader
+A Godot example to run a lunar lander neural net using Slang and compute shaders.
