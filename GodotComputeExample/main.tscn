@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cqow47bch5ocs"]
+
+[ext_resource type="Script" uid="uid://bascpdpkrhvfc" path="res://GodotComputeExample/RenderComputeExample.cs" id="1_gpii0"]
+
+[node name="Node3D" type="Node3D"]
+script = ExtResource("1_gpii0")

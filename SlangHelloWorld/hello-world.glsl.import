@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://dm5ftsbcoceob"
+path="res://.godot/imported/hello-world.glsl-9ab935713995d70c886fd2b5ee4d1996.res"
+
+[deps]
+
+source_file="res://SlangHelloWorld/hello-world.glsl"
+dest_files=["res://.godot/imported/hello-world.glsl-9ab935713995d70c886fd2b5ee4d1996.res"]
+
+[params]
+

@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://cpr3ypd1rqo4l"]
+
+[ext_resource type="Script" uid="uid://dj7aua8cwcsnn" path="res://NeuralNetLinearLayer/RenderNeuralNetLinearLayer.cs" id="1_vhp7a"]
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_vhp7a")
