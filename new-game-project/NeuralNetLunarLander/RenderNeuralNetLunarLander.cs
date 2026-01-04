@@ -3,6 +3,25 @@ using System;
 
 public partial class RenderNeuralNetLunarLander : Node3D
 {
+	const int inBatches = 1;
+	const int inFeatureSize = 8;
+	const int hiddenSize = 128;
+	const int outFeatureSize = 4;
+	const int relu = 255;
+
+	RenderingDevice rd;
+	Rid shader;
+
+	Rid uniformSet;
+	Rid uniformSet1;
+	Rid uniformSet2;
+
+	Rid buffer0; // input
+	Rid buffer9; // output
+
+	float[] output;
+	byte[] outputBytes;
+
 	/**
 tensor([ 1.5035,  1.2645,  0.8818, -0.4202, -0.9009,  0.4167,  1.3025, -0.0522])
 tensor([12.2133, 15.5770, 12.8879, 10.6199], grad_fn=<ViewBackward0>)
@@ -11,23 +30,16 @@ tensor([12.2133, 15.5770, 12.8879, 10.6199], grad_fn=<ViewBackward0>)
 	public override void _Ready()
 	{
 		var nn = NeuralNetModelFile.ReadFile("Models/dqn_lunar_lander.bin");
-		GD.Print(nn.layers[0].weights);
 		
-		const int inBatches = 1;
-		const int inFeatureSize = 8;
-		const int hiddenSize = 128;
-		const int outFeatureSize = 4;
-
-		var rd = RenderingServer.CreateLocalRenderingDevice();
+		rd = RenderingServer.CreateLocalRenderingDevice();
 		
 		// Load GLSL shader
 		var shaderFile = GD.Load<RDShaderFile>("res://NeuralNetLunarLander/nn-lunar-lander.glsl");
 		var shaderBytecode = shaderFile.GetSpirV();
-		var shader = rd.ShaderCreateFromSpirV(shaderBytecode);
+		shader = rd.ShaderCreateFromSpirV(shaderBytecode);
 		
 		// Prepare our data. We use floats in the shader, so we need 32 bit.
-		float[] input = [1.5035f,  1.2645f,  0.8818f, -0.4202f, -0.9009f,  0.4167f,  1.3025f, -0.0522f];
-
+		float[] input = new float[8];
 		var inputBytes = new byte[input.Length * sizeof(float)];
 		Buffer.BlockCopy(input, 0, inputBytes, 0, inputBytes.Length);
 		
@@ -49,32 +61,32 @@ tensor([12.2133, 15.5770, 12.8879, 10.6199], grad_fn=<ViewBackward0>)
 		var layer3biasBytes = new byte[nn.layers[2].bias.Length * sizeof(float)];
 		Buffer.BlockCopy(nn.layers[2].bias, 0, layer3biasBytes, 0, layer3biasBytes.Length);
 
-		float[] output = new float[inBatches * hiddenSize];
-		var outputBytes = new byte[output.Length * sizeof(float)];
+		output = new float[inBatches * hiddenSize];
+		outputBytes = new byte[output.Length * sizeof(float)];
 		Buffer.BlockCopy(output, 0, outputBytes, 0, outputBytes.Length);
 
 		float[] output1 = new float[inBatches * hiddenSize];
 		var output1Bytes = new byte[output1.Length * sizeof(float)];
 		Buffer.BlockCopy(output1, 0, output1Bytes, 0, output1Bytes.Length);
 
-		float[] output2 = new float[inBatches * hiddenSize];
+		float[] output2 = new float[inBatches * outFeatureSize];
 		var output2Bytes = new byte[output2.Length * sizeof(float)];
 		Buffer.BlockCopy(output2, 0, output2Bytes, 0, output2Bytes.Length);
 
-		var linearParams = new int[4] { 8, 128, 255, 0 };
+		var linearParams = new int[4] { inFeatureSize, hiddenSize, relu, 0 };
 		var linearParamsBytes = new byte[linearParams.Length * sizeof(float)];
 		Buffer.BlockCopy(linearParams, 0, linearParamsBytes, 0, linearParamsBytes.Length);
 
-		var linear1Params = new int[4] { 128, 128, 255, 0 };
+		var linear1Params = new int[4] { hiddenSize, hiddenSize, relu, 0 };
 		var linear1ParamsBytes = new byte[linear1Params.Length * sizeof(float)];
 		Buffer.BlockCopy(linear1Params, 0, linear1ParamsBytes, 0, linear1ParamsBytes.Length);
 
-		var linear2Params = new int[4] { 128, 4, 0, 0 };
+		var linear2Params = new int[4] { hiddenSize, outFeatureSize, 0, 0 };
 		var linear2ParamsBytes = new byte[linear2Params.Length * sizeof(float)];
 		Buffer.BlockCopy(linear2Params, 0, linear2ParamsBytes, 0, linear2ParamsBytes.Length);
 
 		// Create a storage buffer that can hold our float values.
-		var buffer0 = rd.StorageBufferCreate((uint)inputBytes.Length, inputBytes);
+		buffer0 = rd.StorageBufferCreate((uint)inputBytes.Length, inputBytes);
 		
 		var buffer1 = rd.StorageBufferCreate((uint)layer1weightsBytes.Length, layer1weightsBytes);
 		var buffer2 = rd.StorageBufferCreate((uint)layer1biasBytes.Length, layer1biasBytes);
@@ -87,7 +99,7 @@ tensor([12.2133, 15.5770, 12.8879, 10.6199], grad_fn=<ViewBackward0>)
 		
 		var buffer7 = rd.StorageBufferCreate((uint)outputBytes.Length, outputBytes);
 		var buffer8 = rd.StorageBufferCreate((uint)output1Bytes.Length, output1Bytes);
-		var buffer9 = rd.StorageBufferCreate((uint)output2Bytes.Length, output2Bytes);
+		buffer9 = rd.StorageBufferCreate((uint)output2Bytes.Length, output2Bytes);
 
 		var buffer10 = rd.UniformBufferCreate((uint)linearParamsBytes.Length, linearParamsBytes);
 		var buffer11 = rd.UniformBufferCreate((uint)linear1ParamsBytes.Length, linear1ParamsBytes);
@@ -189,26 +201,39 @@ tensor([12.2133, 15.5770, 12.8879, 10.6199], grad_fn=<ViewBackward0>)
 		output1Uniform.AddId(buffer8);
 		output2Uniform.AddId(buffer9);
 
-		var uniformSet = rd.UniformSetCreate([
+		uniformSet = rd.UniformSetCreate([
 			linearParamsUniform,
 			inputUniform,
 			layer1weightsUniform,
 			layer1biasUniform,
 			outputUniform], shader, 0);
 		
-		var uniformSet1 = rd.UniformSetCreate([
+		uniformSet1 = rd.UniformSetCreate([
 			linear1ParamsUniform,
 			inputOutputUniform,
 			layer2weightsUniform,
 			layer2biasUniform,
 			output1Uniform], shader, 0);
 
-		var uniformSet2 = rd.UniformSetCreate([
+		uniformSet2 = rd.UniformSetCreate([
 			linear2ParamsUniform,
 			inputOutput1Uniform,
 			layer3weightsUniform,
 			layer3biasUniform,
 			output2Uniform], shader, 0);
+	}
+
+	// Called every frame. 'delta' is the elapsed time since the previous frame.
+	public override void _Process(double delta)
+	{
+
+	}
+
+	public float[] PredictSync(float[] input)
+	{
+		var inputBytes = new byte[input.Length * sizeof(float)];
+		Buffer.BlockCopy(input, 0, inputBytes, 0, inputBytes.Length);
+		rd.BufferUpdate(buffer0, 0, (uint)inputBytes.Length, inputBytes);
 
 		// Create a compute pipeline
 		var pipeline = rd.ComputePipelineCreate(shader);
@@ -244,44 +269,10 @@ tensor([12.2133, 15.5770, 12.8879, 10.6199], grad_fn=<ViewBackward0>)
 		rd.Sync();
 		
 		// Read back the data from the buffers
-		outputBytes = rd.BufferGetData(buffer7);
-		output = new float[inBatches * hiddenSize];
+		outputBytes = rd.BufferGetData(buffer9);
+		output = new float[inBatches * outFeatureSize];
 		Buffer.BlockCopy(outputBytes, 0, output, 0, outputBytes.Length);
 
-		output1Bytes = rd.BufferGetData(buffer8);
-		output1 = new float[inBatches * hiddenSize];
-		Buffer.BlockCopy(output1Bytes, 0, output1, 0, output1Bytes.Length);
-
-		output2Bytes = rd.BufferGetData(buffer9);
-		output2 = new float[inBatches * hiddenSize];
-		Buffer.BlockCopy(output2Bytes, 0, output2, 0, output2Bytes.Length);
-		
-		float[] expectedOutput = [12.2143f, 15.5779f, 12.8887f, 10.6211f];
-		bool[] outcome = new bool[expectedOutput.Length];
-		for(int i = 0; i < expectedOutput.Length; i++) {
-			outcome[i] = Math.Abs(expectedOutput[i] - output2[i]) < 0.001;
-		}
-
-		GD.Print("Input: ");
-		GD.Print(" ", string.Join(", ", input));
-
-		GD.Print("Output 0: ");
-		GD.Print(" ", string.Join(", ", output));
-
-		GD.Print("Output 1: ");
-		GD.Print(" ", string.Join(", ", output1));
-
-		GD.Print("Output 2: ");
-		GD.Print(" ", string.Join(", ", output2));
-
-		GD.Print("Outcome: ");
-		GD.Print(" ", string.Join(", ", outcome));
-
-		rd.Free();
-	}
-
-	// Called every frame. 'delta' is the elapsed time since the previous frame.
-	public override void _Process(double delta)
-	{
+		return output;
 	}
 }

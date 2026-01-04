@@ -1,6 +1,70 @@
-[gd_scene load_steps=2 format=3 uid="uid://c8lqgpmjk42l8"]
+[gd_scene load_steps=9 format=3 uid="uid://c8lqgpmjk42l8"]
 
 [ext_resource type="Script" uid="uid://4fp22xmllce8" path="res://NeuralNetLunarLander/RenderNeuralNetLunarLander.cs" id="1_rm30y"]
+[ext_resource type="Script" uid="uid://crhnygdq5o28q" path="res://NeuralNetLunarLander/LanderController.cs" id="2_n1cww"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_n1cww"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_6d7vx"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_n1cww"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_6d7vx"]
+size = Vector3(10, 1, 10)
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_n1cww"]
+top_radius = 0.1
+bottom_radius = 0.1
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_6d7vx"]
+albedo_color = Color(0.96071476, 0.19672436, 3.85046e-07, 1)
 
 [node name="Main" type="Node3D"]
 script = ExtResource("1_rm30y")
+
+[node name="Lander" type="Node3D" parent="." node_paths=PackedStringArray("ControlNet", "Body")]
+script = ExtResource("2_n1cww")
+ControlNet = NodePath("..")
+Body = NodePath("RigidBody3D")
+
+[node name="RigidBody3D" type="RigidBody3D" parent="Lander"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0)
+axis_lock_linear_z = true
+axis_lock_angular_x = true
+axis_lock_angular_y = true
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Lander/RigidBody3D"]
+shape = SubResource("BoxShape3D_n1cww")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Lander/RigidBody3D"]
+mesh = SubResource("BoxMesh_6d7vx")
+
+[node name="Terrain" type="Node3D" parent="Lander"]
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Lander/Terrain"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Lander/Terrain/StaticBody3D"]
+transform = Transform3D(5, 0, 0, 0, 1, 0, 0, 0, 5, 0, 0.5, 0)
+mesh = SubResource("PlaneMesh_n1cww")
+skeleton = NodePath("")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Lander/Terrain/StaticBody3D"]
+shape = SubResource("BoxShape3D_6d7vx")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6469917, 4.103661)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+
+[node name="Node3D" type="Node3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
+mesh = SubResource("CylinderMesh_n1cww")
+surface_material_override/0 = SubResource("StandardMaterial3D_6d7vx")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
+mesh = SubResource("CylinderMesh_n1cww")
+surface_material_override/0 = SubResource("StandardMaterial3D_6d7vx")
