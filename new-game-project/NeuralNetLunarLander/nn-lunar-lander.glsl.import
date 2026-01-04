@@ -1,0 +1,14 @@
+[remap]
+
+importer="glsl"
+type="RDShaderFile"
+uid="uid://bgwre3d0km5sc"
+path="res://.godot/imported/nn-lunar-lander.glsl-01eaf6a27008386bb1972a3ac33e6378.res"
+
+[deps]
+
+source_file="res://NeuralNetLunarLander/nn-lunar-lander.glsl"
+dest_files=["res://.godot/imported/nn-lunar-lander.glsl-01eaf6a27008386bb1972a3ac33e6378.res"]
+
+[params]
+

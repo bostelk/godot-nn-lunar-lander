@@ -1,0 +1,1 @@
+..\..\tools\slang-2025.24.2-windows-x86_64\bin\slangc.exe nn-lunar-lander.slang -profile glsl_450 -target glsl -o nn-lunar-lander.glsl -entry computeMain

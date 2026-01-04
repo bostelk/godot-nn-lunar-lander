@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://c8lqgpmjk42l8"]
+
+[ext_resource type="Script" uid="uid://4fp22xmllce8" path="res://NeuralNetLunarLander/RenderNeuralNetLunarLander.cs" id="1_rm30y"]
+
+[node name="Main" type="Node3D"]
+script = ExtResource("1_rm30y")
