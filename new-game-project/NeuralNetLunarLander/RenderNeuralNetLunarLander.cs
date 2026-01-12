@@ -235,6 +235,10 @@ tensor([12.2133, 15.5770, 12.8879, 10.6199], grad_fn=<ViewBackward0>)
 
 	public float[] PredictSync(float[] input)
 	{
+		if (!GodotObject.IsInstanceValid(rd)) {
+			return new float[] { 0, 0, 0, 0 };
+		}
+		
 		var inputBytes = new byte[input.Length * sizeof(float)];
 		Buffer.BlockCopy(input, 0, inputBytes, 0, inputBytes.Length);
 		rd.BufferUpdate(buffer0, 0, (uint)inputBytes.Length, inputBytes);
