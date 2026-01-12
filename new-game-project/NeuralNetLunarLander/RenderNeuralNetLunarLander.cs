@@ -19,6 +19,8 @@ public partial class RenderNeuralNetLunarLander : Node
 	Rid buffer0; // input
 	Rid buffer9; // output
 
+	Rid[] storageBuffers;
+	
 	float[] output;
 	byte[] outputBytes;
 
@@ -105,6 +107,8 @@ tensor([12.2133, 15.5770, 12.8879, 10.6199], grad_fn=<ViewBackward0>)
 		var buffer11 = rd.UniformBufferCreate((uint)linear1ParamsBytes.Length, linear1ParamsBytes);
 		var buffer12 = rd.UniformBufferCreate((uint)linear2ParamsBytes.Length, linear2ParamsBytes);
 
+		storageBuffers = [buffer0,buffer1,buffer2,buffer3,buffer4,buffer5,buffer6,buffer7,buffer8,buffer9,buffer10,buffer11,buffer12];
+		
 		// Create a uniform to assign the buffer to the rendering device
 		var linearParamsUniform = new RDUniform
 		{
@@ -274,5 +278,14 @@ tensor([12.2133, 15.5770, 12.8879, 10.6199], grad_fn=<ViewBackward0>)
 		Buffer.BlockCopy(outputBytes, 0, output, 0, outputBytes.Length);
 
 		return output;
+	}
+	
+	public override void _ExitTree()
+	{
+		for(int i = 0; i < storageBuffers.Length; i++) {
+			rd.FreeRid(storageBuffers[i]);
+		}
+		rd.FreeRid(shader);
+		rd.Free();
 	}
 }
