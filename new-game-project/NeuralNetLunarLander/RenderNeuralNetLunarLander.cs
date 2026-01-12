@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-public partial class RenderNeuralNetLunarLander : Node3D
+public partial class RenderNeuralNetLunarLander : Node
 {
 	const int inBatches = 1;
 	const int inFeatureSize = 8;

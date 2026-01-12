@@ -1,13 +1,25 @@
 using Godot;
 using System;
 
-public partial class LanderController : Node3D
+public partial class LanderController : Node2D
 {
+	[Export] 
+	public Camera2D Camera;
+
 	[Export]
 	public RenderNeuralNetLunarLander ControlNet;
 
 	[Export]
-	public RigidBody3D Body;
+	public RigidBody2D Body;
+
+	[Export]
+	public CpuParticles2D MainEngineParticles;
+	
+	[Export]
+	public CpuParticles2D LeftEngineParticles;
+
+	[Export]
+	public CpuParticles2D RightEngineParticles;
 
 	float x;
 	float y;
@@ -17,6 +29,11 @@ public partial class LanderController : Node3D
 	float angularVel;
 	float leftLegContact;
 	float rightLegContact;
+
+	double contactTime = 0;
+
+	Vector2 left;
+	Vector2 down;
 
 	enum Action {
 		DoNothing,
@@ -39,8 +56,32 @@ public partial class LanderController : Node3D
 		Body.MaxContactsReported = 1;
 		Body.BodyEntered += OnBodyEntered;
 		Body.BodyExited += OnBodyExited;
+
+		Reset();
+	}
+
+	private void Reset()
+	{
+		leftLegContact = 0;
+		rightLegContact = 0;
+		contactTime = 0;
+
+		// The lander starts at the top-center of the viewport.
+		float RandomX = GD.RandRange(-200,200);
+		Vector2 position = new Vector2(RandomX, -200);
+		Body.Position = position;
+
+		const float InitialPower = 100;
+		float Theta = (float)GD.RandRange(0f, 3.14f*2f);
+		//Body.ApplyImpulse(new Vector2(InitialPower * (float)Math.Sin(Theta), InitialPower * (float)Math.Cos(Theta)));
 	}
 	
+	private void ResetScene()
+	{
+		var currentScene = GetTree().CurrentScene;
+		GetTree().ReloadCurrentScene();
+	}
+
 	private void OnBodyEntered(Node body)
 	{
 		leftLegContact = 1;
@@ -53,32 +94,62 @@ public partial class LanderController : Node3D
 		rightLegContact = 0;
 	}
 
+	public override void _Input(InputEvent @event)
+	{
+		if (@event.IsActionPressed("Reset"))
+		{
+			ResetScene();
+		}
+	}
+
+	public override void _Draw()
+	{
+		//DrawLine(Body.GlobalPosition, Body.GlobalPosition - 8 * left, Colors.Green, 1.0f);
+		//DrawLine(Body.GlobalPosition, Body.GlobalPosition + 10 * down, Colors.Red, 1.0f);
+	}
+
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
 	public override void _Process(double delta)
 	{
+		//QueueRedraw();
+
 		Observe();
 
-		var observations = GetObservations();
-		Box(observations, Low, High);
-		GD.Print(" ", string.Join(", ", observations));
-		
-		var predictions = ControlNet.PredictSync(observations);
+		if (leftLegContact == 1 && rightLegContact == 1) {
+			contactTime += delta;
+			if (contactTime > 1) {
+				ResetScene();
+			}
+		}
 
-		const float SideEnginePower = 0.2f;
-		const float MainEnginePower = 0.2f;
+		var state = GetState();
+		Box(state, Low, High);
+		GD.Print(" ", string.Join(", ", state));
+		
+		var predictions = ControlNet.PredictSync(state);
+
+		const float SideEnginePower = 1.5f;
+		const float MainEnginePower = 20f;
+
+		LeftEngineParticles.Emitting = false;
+		MainEngineParticles.Emitting = false;
+		RightEngineParticles.Emitting = false;
 
 		Action action = (Action)TopPredictionIndex(predictions);
 		switch(action) {
 			case Action.FireLeftEngine: {
-				Body.ApplyImpulse(new Vector3(SideEnginePower,0,0));
+				Body.ApplyImpulse(new Vector2(-SideEnginePower,0), 8 * left);
+				LeftEngineParticles.Emitting = true;
 				break;
 			}
 			case Action.FireMainEngine: {
-				Body.ApplyImpulse(new Vector3(0,MainEnginePower,0));
+				Body.ApplyImpulse(new Vector2(0,-MainEnginePower), 10 * down);
+				MainEngineParticles.Emitting = true;
 				break;
 			}
 			case Action.FireRightEngine: {
-				Body.ApplyImpulse(new Vector3(-SideEnginePower,0,0));
+				Body.ApplyImpulse(new Vector2(SideEnginePower,0), -8 * left);
+				RightEngineParticles.Emitting = true;
 				break;
 			}
 		}
@@ -88,18 +159,27 @@ public partial class LanderController : Node3D
 
 	void Observe()
 	{
-		x = Body.Position.X;
-		y = Body.Position.Y;
-		velX = Body.LinearVelocity.X;
-		velY = Body.LinearVelocity.Y;
-		angle = Body.Rotation.Z;
-		angularVel = Body.AngularVelocity.Z;
+		const float Scale = 30;
+		const float ViewportWidth = 600;
+		const float ViewportHeight = 400;
+		const float HelipadY = 100;
+		const float DistToLeg = 10;
+		float Fps = Engine.PhysicsTicksPerSecond;
+
+		x = Body.Position.X / (ViewportWidth / 2);
+		y = (((Body.Position.Y * -1 + ViewportHeight / 2) / Scale) - ((HelipadY+DistToLeg)/Scale)) / 6.666f;
+		velX = Body.LinearVelocity.X * (1 / Scale / 2) / Fps;
+		velY = -Body.LinearVelocity.Y * (1) / Fps;
+		angle = -Body.Rotation;
+		angularVel = -20f * Body.AngularVelocity / Fps;
+
+		down = new Vector2(Mathf.Cos(angle + Mathf.Pi/2), Mathf.Sin(angle + Mathf.Pi/2));
+		left = new Vector2(-down.Y, down.X);
 	}
 
-	float[] GetObservations()
+	float[] GetState()
 	{
-		float[] state = new float[] { x, y, velX, velY, angle, angularVel, leftLegContact, rightLegContact };
-		return state;
+		return new float[] { x, y, velX, velY, angle, angularVel, leftLegContact, rightLegContact };
 	}
 
 	void Box(float[] values, float[] low, float[] high)

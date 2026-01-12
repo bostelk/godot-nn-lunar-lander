@@ -1,0 +1,122 @@
+[gd_scene load_steps=11 format=3 uid="uid://bhyqyornc5jnw"]
+
+[ext_resource type="Script" uid="uid://crhnygdq5o28q" path="res://NeuralNetLunarLander/LanderController.cs" id="1_ifc0s"]
+[ext_resource type="Script" uid="uid://4fp22xmllce8" path="res://NeuralNetLunarLander/RenderNeuralNetLunarLander.cs" id="2_6hdta"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ifc0s"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_o0l3n"]
+
+[sub_resource type="Gradient" id="Gradient_ifc0s"]
+offsets = PackedFloat32Array(0.16666667, 0.27333334)
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_6hdta"]
+gradient = SubResource("Gradient_ifc0s")
+width = 16
+height = 16
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+
+[sub_resource type="Gradient" id="Gradient_6hdta"]
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="Gradient" id="Gradient_7ydwt"]
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="Gradient" id="Gradient_ujnnl"]
+colors = PackedColorArray(1, 1, 1, 1, 0, 0, 0, 1)
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_ifc0s"]
+a = Vector2(-300, 0)
+b = Vector2(300, 0)
+
+[node name="Main" type="Node2D"]
+
+[node name="LanderController" type="Node2D" parent="." node_paths=PackedStringArray("Camera", "ControlNet", "Body", "MainEngineParticles", "LeftEngineParticles", "RightEngineParticles")]
+script = ExtResource("1_ifc0s")
+Camera = NodePath("../Camera2D")
+ControlNet = NodePath("../RenderNeuralNetLunarLander")
+Body = NodePath("RigidBody2D")
+MainEngineParticles = NodePath("RigidBody2D/MainEngineParticles")
+LeftEngineParticles = NodePath("RigidBody2D/RightEngineParticles")
+RightEngineParticles = NodePath("RigidBody2D/LeftEngineParticles")
+
+[node name="RigidBody2D" type="RigidBody2D" parent="LanderController"]
+physics_material_override = SubResource("PhysicsMaterial_ifc0s")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LanderController/RigidBody2D"]
+shape = SubResource("RectangleShape2D_o0l3n")
+
+[node name="Line2D" type="Line2D" parent="LanderController/RigidBody2D"]
+points = PackedVector2Array(-8, -10, -10, 10, 10, 10, 8, -10)
+closed = true
+width = 1.0
+
+[node name="MainEngineParticles" type="CPUParticles2D" parent="LanderController/RigidBody2D"]
+position = Vector2(0, 11)
+emitting = false
+texture = SubResource("GradientTexture2D_6hdta")
+lifetime = 0.3
+local_coords = true
+direction = Vector2(0, 1)
+gravity = Vector2(0, 0)
+initial_velocity_min = 113.4
+initial_velocity_max = 113.4
+color_ramp = SubResource("Gradient_6hdta")
+
+[node name="RightEngineParticles" type="CPUParticles2D" parent="LanderController/RigidBody2D"]
+position = Vector2(11, 0)
+emitting = false
+texture = SubResource("GradientTexture2D_6hdta")
+lifetime = 0.3
+local_coords = true
+gravity = Vector2(0, 0)
+initial_velocity_min = 113.4
+initial_velocity_max = 113.4
+color_ramp = SubResource("Gradient_7ydwt")
+
+[node name="LeftEngineParticles" type="CPUParticles2D" parent="LanderController/RigidBody2D"]
+position = Vector2(-11, 0)
+emitting = false
+texture = SubResource("GradientTexture2D_6hdta")
+lifetime = 0.3
+local_coords = true
+direction = Vector2(-1, 0)
+gravity = Vector2(0, 0)
+initial_velocity_min = 113.4
+initial_velocity_max = 113.4
+color_ramp = SubResource("Gradient_ujnnl")
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="Terrain" type="Node2D" parent="."]
+position = Vector2(0, 100)
+
+[node name="StaticBody2D" type="StaticBody2D" parent="Terrain"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Terrain/StaticBody2D"]
+position = Vector2(-11, 0)
+shape = SubResource("SegmentShape2D_ifc0s")
+
+[node name="Line2D" type="Line2D" parent="Terrain/StaticBody2D"]
+points = PackedVector2Array(-302, 0, 298, 0)
+width = 1.0
+
+[node name="RenderNeuralNetLunarLander" type="Node" parent="."]
+script = ExtResource("2_6hdta")
+
+[node name="Goal" type="Node2D" parent="."]
+position = Vector2(0, 100)
+
+[node name="Line2D" type="Line2D" parent="Goal"]
+position = Vector2(-20, 0)
+points = PackedVector2Array(0, -20, 0, 0)
+width = 1.0
+default_color = Color(1, 0, 0, 1)
+
+[node name="Line2D2" type="Line2D" parent="Goal"]
+position = Vector2(20, 0)
+points = PackedVector2Array(0, -20, 0, 0)
+width = 1.0
+default_color = Color(1, 0, 0, 1)

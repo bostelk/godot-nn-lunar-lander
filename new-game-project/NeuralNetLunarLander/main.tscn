@@ -22,8 +22,9 @@ albedo_color = Color(0.96071476, 0.19672436, 3.85046e-07, 1)
 [node name="Main" type="Node3D"]
 script = ExtResource("1_rm30y")
 
-[node name="Lander" type="Node3D" parent="." node_paths=PackedStringArray("ControlNet", "Body")]
+[node name="Lander" type="Node3D" parent="." node_paths=PackedStringArray("Camera", "ControlNet", "Body")]
 script = ExtResource("2_n1cww")
+Camera = NodePath("../Camera3D")
 ControlNet = NodePath("..")
 Body = NodePath("RigidBody3D")
 
