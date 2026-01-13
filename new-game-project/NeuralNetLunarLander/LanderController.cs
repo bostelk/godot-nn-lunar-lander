@@ -62,6 +62,8 @@ public partial class LanderController : Node2D
 
 	private void Reset()
 	{
+		Body.Rotation = 0;
+
 		leftLegContact = 0;
 		rightLegContact = 0;
 		contactTime = 0;
@@ -106,6 +108,7 @@ public partial class LanderController : Node2D
 	{
 		//DrawLine(Body.GlobalPosition, Body.GlobalPosition - 8 * left, Colors.Green, 1.0f);
 		//DrawLine(Body.GlobalPosition, Body.GlobalPosition + 10 * down, Colors.Red, 1.0f);
+		//DrawLine(Body.GlobalPosition, Body.GlobalPosition +	10 * -down - 8 * left, Colors.Yellow, 1.0f);
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -119,6 +122,7 @@ public partial class LanderController : Node2D
 			contactTime += delta;
 			if (contactTime > 1) {
 				ResetScene();
+				return;
 			}
 		}
 
@@ -138,17 +142,17 @@ public partial class LanderController : Node2D
 		Action action = (Action)TopPredictionIndex(predictions);
 		switch(action) {
 			case Action.FireLeftEngine: {
-				Body.ApplyImpulse(new Vector2(-SideEnginePower,0), 8 * left);
+				Body.ApplyImpulse(left * SideEnginePower, 10 * -down - 8 * left);
 				LeftEngineParticles.Emitting = true;
 				break;
 			}
 			case Action.FireMainEngine: {
-				Body.ApplyImpulse(new Vector2(0,-MainEnginePower), 10 * down);
+				Body.ApplyImpulse(-down * MainEnginePower, 10 * down);
 				MainEngineParticles.Emitting = true;
 				break;
 			}
 			case Action.FireRightEngine: {
-				Body.ApplyImpulse(new Vector2(SideEnginePower,0), -8 * left);
+				Body.ApplyImpulse(-left * SideEnginePower, 10 * -down +8 * left);
 				RightEngineParticles.Emitting = true;
 				break;
 			}
@@ -176,11 +180,14 @@ public partial class LanderController : Node2D
 
 		velX = Body.LinearVelocity.X / Fps;
 		velY = -Body.LinearVelocity.Y / Fps;
-		angle = -Body.Rotation;
-		angularVel = -20f * Body.AngularVelocity / Fps;
+		angle = Body.Rotation;
+		angularVel = 20f * Body.AngularVelocity / Fps;
 
 		down = new Vector2(Mathf.Cos(angle + Mathf.Pi/2), Mathf.Sin(angle + Mathf.Pi/2));
 		left = new Vector2(-down.Y, down.X);
+
+		angle *=-1;
+		angularVel *=-1;
 	}
 
 	float[] GetState()

@@ -1,7 +1,9 @@
-[gd_scene load_steps=11 format=3 uid="uid://bhyqyornc5jnw"]
+[gd_scene load_steps=13 format=3 uid="uid://bhyqyornc5jnw"]
 
+[ext_resource type="AudioStream" uid="uid://byb1nxlsujqip" path="res://Audio/Claire de lune.mp3" id="1_7ydwt"]
 [ext_resource type="Script" uid="uid://crhnygdq5o28q" path="res://NeuralNetLunarLander/LanderController.cs" id="1_ifc0s"]
 [ext_resource type="Script" uid="uid://4fp22xmllce8" path="res://NeuralNetLunarLander/RenderNeuralNetLunarLander.cs" id="2_6hdta"]
+[ext_resource type="Texture2D" uid="uid://d4bina3m88j2e" path="res://Images/decorative-small-star-pattern-dark-background-design_1017-53361.png" id="3_6hdta"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_ifc0s"]
 
@@ -32,6 +34,15 @@ a = Vector2(-300, 0)
 b = Vector2(300, 0)
 
 [node name="Main" type="Node2D"]
+
+[node name="ClaireDeLune" type="AudioStreamPlayer2D" parent="."]
+position = Vector2(-15, 14)
+stream = ExtResource("1_7ydwt")
+
+[node name="DecorativeSmallStarPatternDarkBackgroundDesign101753361" type="Sprite2D" parent="."]
+modulate = Color(1, 1, 1, 0.2627451)
+position = Vector2(1, -226)
+texture = ExtResource("3_6hdta")
 
 [node name="LanderController" type="Node2D" parent="." node_paths=PackedStringArray("Camera", "ControlNet", "Body", "MainEngineParticles", "LeftEngineParticles", "RightEngineParticles")]
 script = ExtResource("1_ifc0s")
@@ -66,7 +77,7 @@ initial_velocity_max = 113.4
 color_ramp = SubResource("Gradient_6hdta")
 
 [node name="RightEngineParticles" type="CPUParticles2D" parent="LanderController/RigidBody2D"]
-position = Vector2(11, 0)
+position = Vector2(8, -9)
 emitting = false
 texture = SubResource("GradientTexture2D_6hdta")
 lifetime = 0.3
@@ -77,7 +88,7 @@ initial_velocity_max = 113.4
 color_ramp = SubResource("Gradient_7ydwt")
 
 [node name="LeftEngineParticles" type="CPUParticles2D" parent="LanderController/RigidBody2D"]
-position = Vector2(-11, 0)
+position = Vector2(-9, -9)
 emitting = false
 texture = SubResource("GradientTexture2D_6hdta")
 lifetime = 0.3
