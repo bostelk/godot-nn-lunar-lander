@@ -109,7 +109,7 @@ public partial class LanderController : Node2D
 	}
 
 	// Called every frame. 'delta' is the elapsed time since the previous frame.
-	public override void _Process(double delta)
+	public override void _PhysicsProcess(double delta) 
 	{
 		//QueueRedraw();
 
@@ -128,8 +128,8 @@ public partial class LanderController : Node2D
 		
 		var predictions = ControlNet.PredictSync(state);
 
-		const float SideEnginePower = 1.5f;
-		const float MainEnginePower = 20f;
+		const float SideEnginePower = 2.5f;
+		const float MainEnginePower = 25f;
 
 		LeftEngineParticles.Emitting = false;
 		MainEngineParticles.Emitting = false;
@@ -166,10 +166,16 @@ public partial class LanderController : Node2D
 		const float DistToLeg = 10;
 		float Fps = Engine.PhysicsTicksPerSecond;
 
+		// Remap from screen [-300,300] to normalized [-1,1]
 		x = Body.Position.X / (ViewportWidth / 2);
-		y = (((Body.Position.Y * -1 + ViewportHeight / 2) / Scale) - ((HelipadY+DistToLeg)/Scale)) / 6.666f;
-		velX = Body.LinearVelocity.X * (1 / Scale / 2) / Fps;
-		velY = -Body.LinearVelocity.Y * (1) / Fps;
+
+		// Remap from top, bottom screen [-200,200] to [400, 0]
+		y = Body.Position.Y * -1 + ViewportHeight / 2;
+		// Remap from top, bottom screen [400, 0] to normalized [1, 0]
+		y = (y - DistToLeg - HelipadY) / (ViewportHeight / 2);
+
+		velX = Body.LinearVelocity.X / Fps;
+		velY = -Body.LinearVelocity.Y / Fps;
 		angle = -Body.Rotation;
 		angularVel = -20f * Body.AngularVelocity / Fps;
 
