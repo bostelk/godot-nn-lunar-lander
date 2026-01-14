@@ -112,7 +112,7 @@ shape = SubResource("SegmentShape2D_ifc0s")
 
 [node name="Line2D" type="Line2D" parent="Terrain/StaticBody2D"]
 points = PackedVector2Array(-302, 0, 298, 0)
-width = 1.0
+width = 2.0
 
 [node name="RenderNeuralNetLunarLander" type="Node" parent="."]
 script = ExtResource("2_6hdta")
@@ -123,11 +123,22 @@ position = Vector2(0, 100)
 [node name="Line2D" type="Line2D" parent="Goal"]
 position = Vector2(-20, 0)
 points = PackedVector2Array(0, -20, 0, 0)
-width = 1.0
+width = 2.0
 default_color = Color(1, 0, 0, 1)
 
 [node name="Line2D2" type="Line2D" parent="Goal"]
 position = Vector2(20, 0)
 points = PackedVector2Array(0, -20, 0, 0)
-width = 1.0
+width = 2.0
 default_color = Color(1, 0, 0, 1)
+
+[node name="RichTextLabel" type="RichTextLabel" parent="."]
+offset_left = -296.0
+offset_top = 102.0
+offset_right = -102.0
+offset_bottom = 200.0
+size_flags_vertical = 0
+text = "Lunar Lander
+Left - Fire Left Engine
+Right - Fire Right Engine
+Up - Fire Main Engine"

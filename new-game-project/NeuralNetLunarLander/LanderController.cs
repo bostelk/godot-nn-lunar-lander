@@ -41,6 +41,7 @@ public partial class LanderController : Node2D
 		FireMainEngine,
 		FireRightEngine
 	}
+	Action userAction;
 
 	float[] Low = {
 		-10, -10, -10, -10, -10, -10, 0, 0
@@ -102,6 +103,21 @@ public partial class LanderController : Node2D
 		{
 			ResetScene();
 		}
+
+		userAction = Action.DoNothing;
+
+		if (@event.IsActionPressed("FireLeftEngine"))
+		{
+			userAction = Action.FireLeftEngine;
+		}
+		if (@event.IsActionPressed("FireRightEngine"))
+		{
+			userAction = Action.FireRightEngine;
+		}
+		if (@event.IsActionPressed("FireMainEngine"))
+		{
+			userAction = Action.FireMainEngine;
+		}
 	}
 
 	public override void _Draw()
@@ -140,6 +156,12 @@ public partial class LanderController : Node2D
 		RightEngineParticles.Emitting = false;
 
 		Action action = (Action)TopPredictionIndex(predictions);
+
+		if (userAction != Action.DoNothing)
+		{
+			action = userAction;
+		}
+
 		switch(action) {
 			case Action.FireLeftEngine: {
 				Body.ApplyImpulse(left * SideEnginePower, 10 * -down - 8 * left);
