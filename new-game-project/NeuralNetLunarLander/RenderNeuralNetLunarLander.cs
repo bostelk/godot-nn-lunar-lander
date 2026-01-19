@@ -252,19 +252,11 @@ tensor([12.2133, 15.5770, 12.8879, 10.6199], grad_fn=<ViewBackward0>)
 		rd.ComputeListDispatch(computeList, xGroups: hiddenSize, yGroups: inBatches, zGroups: 1);
 		rd.ComputeListEnd();
 
-		// Submit to GPU and wait for sync
-		rd.Submit();
-		rd.Sync();
-
 		var computeList1 = rd.ComputeListBegin();
 		rd.ComputeListBindComputePipeline(computeList1, pipeline);
 		rd.ComputeListBindUniformSet(computeList1, uniformSet1, 0);
 		rd.ComputeListDispatch(computeList1, xGroups: hiddenSize, yGroups: inBatches, zGroups: 1);
 		rd.ComputeListEnd();
-
-		// Submit to GPU and wait for sync
-		rd.Submit();
-		rd.Sync();
 
 		var computeList2 = rd.ComputeListBegin();
 		rd.ComputeListBindComputePipeline(computeList2, pipeline);
