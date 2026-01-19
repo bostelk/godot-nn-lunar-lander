@@ -103,22 +103,28 @@ public partial class LanderController : Node2D
 		{
 			ResetScene();
 		}
+	}
 
-		userAction = Action.DoNothing;
+	private Action GetUserAction()
+	{
+		var userAction = Action.DoNothing;
 
-		if (@event.IsActionPressed("FireLeftEngine"))
+		if (Input.IsActionPressed("FireLeftEngine"))
 		{
 			userAction = Action.FireLeftEngine;
 		}
-		if (@event.IsActionPressed("FireRightEngine"))
+		if (Input.IsActionPressed("FireRightEngine"))
 		{
 			userAction = Action.FireRightEngine;
 		}
-		if (@event.IsActionPressed("FireMainEngine"))
+		if (Input.IsActionPressed("FireMainEngine"))
 		{
 			userAction = Action.FireMainEngine;
 		}
+
+		return userAction;
 	}
+
 
 	public override void _Draw()
 	{
@@ -156,6 +162,8 @@ public partial class LanderController : Node2D
 		RightEngineParticles.Emitting = false;
 
 		Action action = (Action)TopPredictionIndex(predictions);
+
+		userAction = GetUserAction();
 
 		if (userAction != Action.DoNothing)
 		{
